@@ -1,0 +1,10 @@
+# Repository-wide ownership. Changes require review from the accountable maintainer.
+* @emiliancristea
+
+# Security, legal, dependency, and workflow boundaries receive explicit ownership.
+/.github/ @emiliancristea
+/LICENSE @emiliancristea
+/NOTICE.md @emiliancristea
+/locks/ @emiliancristea
+/src/chrono_link/model_store.py @emiliancristea
+/src/chrono_link/recording.py @emiliancristea
