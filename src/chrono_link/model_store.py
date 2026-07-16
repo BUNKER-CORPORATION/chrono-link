@@ -281,8 +281,7 @@ def _load_self_test(path: Path) -> tuple[WindowBatch, NDArray[np.int64], NDArray
     if expected_prediction.dtype != np.int64 or expected_prediction.shape != (examples,):
         raise ModelStoreError("self-test predictions have an invalid contract")
     if expected_probabilities.dtype != np.float64 or (
-        expected_probabilities.ndim != 2
-        or expected_probabilities.shape[0] != examples
+        expected_probabilities.ndim != 2 or expected_probabilities.shape[0] != examples
     ):
         raise ModelStoreError("self-test probabilities have an invalid contract")
     return batch, expected_prediction, expected_probabilities
@@ -435,9 +434,7 @@ class ModelStore:
             if isinstance(expected_value, tuple):
                 actual = tuple(actual) if isinstance(actual, list) else actual
             if actual != expected_value:
-                mismatches.append(
-                    f"{field_name}: expected {expected_value!r}, found {actual!r}"
-                )
+                mismatches.append(f"{field_name}: expected {expected_value!r}, found {actual!r}")
         if manifest["chrono_link_version"] != __version__:
             mismatches.append(
                 f"chrono_link_version: expected {__version__!r}, "

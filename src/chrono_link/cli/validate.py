@@ -59,9 +59,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         }
         payload = {
             "schema_version": 1,
-            "reports": {
-                kind: json.loads(report.to_json()) for kind, report in reports.items()
-            },
+            "reports": {kind: json.loads(report.to_json()) for kind, report in reports.items()},
             "passed": all(report.passed for report in reports.values()),
         }
         write_strict_json(args.out, payload)

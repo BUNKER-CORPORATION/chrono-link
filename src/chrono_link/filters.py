@@ -129,14 +129,14 @@ class CausalFilterBank:
         self.fs = fs
         self.channel_names = channel_names
         self._cleaned_state: NDArray[np.float64] | None = None
-        self._band_states: dict[str, NDArray[np.float64] | None] = {
-            name: None for name in self.design.band_sos
-        }
+        self._band_states: dict[str, NDArray[np.float64] | None] = dict.fromkeys(
+            self.design.band_sos
+        )
         self._processed_since_reset = 0
 
     def reset(self) -> None:
         self._cleaned_state = None
-        self._band_states = {name: None for name in self.design.band_sos}
+        self._band_states = dict.fromkeys(self.design.band_sos)
         self._processed_since_reset = 0
 
     @staticmethod
@@ -239,8 +239,5 @@ class OfflineFilterBank:
         if not np.isfinite(array).all():
             raise FilterError("offline input must be finite")
         cleaned = self._apply(self.design.cleaned_sos, array)
-        bands = {
-            name: self._apply(sos, cleaned)
-            for name, sos in self.design.band_sos.items()
-        }
+        bands = {name: self._apply(sos, cleaned) for name, sos in self.design.band_sos.items()}
         return OfflineFiltered(cleaned, MappingProxyType(bands))

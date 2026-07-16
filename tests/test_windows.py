@@ -15,11 +15,7 @@ def filtered_chunk(
 ) -> FilteredChunk:
     sequence = np.arange(start, start + samples, dtype=np.int64)
     cleaned = np.vstack((sequence, sequence + 10_000)).astype(np.float64)
-    flags = (
-        np.full(samples, settled, dtype=np.bool_)
-        if isinstance(settled, bool)
-        else settled
-    )
+    flags = np.full(samples, settled, dtype=np.bool_) if isinstance(settled, bool) else settled
     return FilteredChunk(
         cleaned=cleaned,
         bands={"mi": cleaned + 1, "mu": cleaned + 2},

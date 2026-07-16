@@ -120,9 +120,7 @@ def test_entropy_sine_noise_and_zero() -> None:
             fs=250,
             markers=np.zeros(1250),
         )
-        broadband = CausalFilterBank(250, ("C3", "C4")).process(source).bands[
-            "broadband"
-        ][:, -250:]
+        broadband = CausalFilterBank(250, ("C3", "C4")).process(source).bands["broadband"][:, -250:]
         noise_frequency, noise_density = welch_psd(broadband, 250)
         entropy = normalized_spectral_entropy(noise_frequency, noise_density)
         assert np.all(entropy >= 0.85)
@@ -131,9 +129,7 @@ def test_entropy_sine_noise_and_zero() -> None:
 def test_default_vector_has_stable_twenty_names() -> None:
     time = np.arange(250) / 250
     c3 = np.sin(2 * np.pi * 10 * time) + 0.2 * np.sin(2 * np.pi * 20 * time)
-    c4 = 0.7 * np.sin(2 * np.pi * 10 * time + 0.3) + 0.2 * np.sin(
-        2 * np.pi * 20 * time + 0.5
-    )
+    c4 = 0.7 * np.sin(2 * np.pi * 10 * time + 0.3) + 0.2 * np.sin(2 * np.pi * 20 * time + 0.5)
     cleaned = np.vstack((c3, c4))
     bands = {name: cleaned.copy() for name in ("broadband", "mi", "mu", "beta")}
     extractor = FeatureExtractor()

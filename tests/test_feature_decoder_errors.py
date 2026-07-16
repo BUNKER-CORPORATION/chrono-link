@@ -119,10 +119,7 @@ def test_spd_and_adapter_error_contracts() -> None:
         RiemannEpochAdapter().transform(missing_mi)
     empty = WindowBatch(
         cleaned=np.empty((0, 2, 250), dtype=np.float64),
-        bands={
-            name: np.empty((0, 2, 250), dtype=np.float64)
-            for name in windows.bands
-        },
+        bands={name: np.empty((0, 2, 250), dtype=np.float64) for name in windows.bands},
         channel_names=windows.channel_names,
         fs=windows.fs,
         sequence_ranges=np.empty((0, 2), dtype=np.int64),

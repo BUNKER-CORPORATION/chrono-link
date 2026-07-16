@@ -127,7 +127,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         recorder = None
         if args.record is not None:
-            assert args.seconds is not None
+            if args.seconds is None:
+                raise ConfigError("--record requires a finite --seconds value")
             row_names = dict(zip(info.eeg_rows, info.eeg_names, strict=True))
             record_names = tuple(row_names[row] for row in info.record_rows)
             recorder = SessionRecorder(
@@ -143,17 +144,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 target = args.out_dir / filename
                 if target.exists():
                     raise FileExistsError(f"output already exists: {target}")
-        visualizer = LiveVisualizer(
+        active_visualizer = LiveVisualizer(
             config.board.decode_channels,
             info.fs,
             headless=args.headless,
         )
+        visualizer = active_visualizer
 
         def update_plot(chunk: SampleChunk) -> None:
-            assert visualizer is not None
-            visualizer.update(chunk)
+            active_visualizer.update(chunk)
             if not args.headless:
-                visualizer.pause()
+                active_visualizer.pause()
 
         predictions: list[dict[str, Any]] = []
         pipeline = RealtimePipeline(
