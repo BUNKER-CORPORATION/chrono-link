@@ -1292,7 +1292,7 @@ There is no deployed user base.
       recentered by ≥90%, distances are preserved within rtol 1e-6, invalid calibration rolls back,
       classifier weights remain unchanged, and an injected clock proves the 120-second insufficient-
       window timeout exits 3 without predictions.
-- [ ] **AC-012 — Quality/CI:** Windows and Linux Python 3.11 jobs, Ruff, mypy, coverage thresholds,
+- [x] **AC-012 — Quality/CI:** Windows and Linux Python 3.11 jobs, Ruff, mypy, coverage thresholds,
       strict JSON, resource-cleanup negatives, and package tests all pass.
 - [x] **AC-013 — Scope report:** final evidence explicitly marks Cyton streaming, real EEG, real motor
       imagery, human safety, and neuroscience efficacy as untested.
@@ -1300,9 +1300,11 @@ There is no deployed user base.
 Track A fixed-foundation completion requires AC-001 through AC-010, AC-012, and AC-013. AC-011 is
 required only if the optional calibration profile is included in the Track A release.
 
-Local evidence on 2026-07-10 satisfies AC-001 through AC-010 and AC-013. AC-011 is explicitly
-deferred. AC-012 remains open until the configured Windows/Linux CI matrix is observed on both hosted
-platforms; the local Windows static, test, coverage, integration, smoke, and package gates pass.
+Local evidence on 2026-07-16 satisfies AC-001 through AC-010 and AC-013. AC-011 is explicitly
+deferred. AC-012 is satisfied by main-branch GitHub Actions run 29526303868: the Windows and Linux
+Python 3.11 test/coverage/smoke jobs and the isolated package job all passed on the source-equivalent
+clean-history candidate. The validated implementation lineage through documentation commit
+`5af528f` is unchanged by this final evidence-only update.
 
 ## 21. Risks & Mitigations
 

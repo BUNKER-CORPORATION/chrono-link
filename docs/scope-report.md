@@ -26,11 +26,19 @@ them.
 - The wheel contains `py.typed` and the proprietary LICENSE and excludes tests, recordings, models,
   and generated local artifacts.
 
-## Configured but not yet observed for this branch
+## Observed cross-platform CI
 
-- Current hardened CI is configured for Windows and Ubuntu with immutable Action SHAs, read-only
-  permissions, hash installs, full tests/coverage, smoke evidence, and isolated package verification.
-- Cross-platform acceptance remains pending until an actual current-branch CI run is observed.
+- Main-branch GitHub Actions run
+  [29526303868](https://github.com/BUNKER-CORPORATION/chrono-link/actions/runs/29526303868) passed
+  the source-equivalent clean-history candidate on 2026-07-16. The validated implementation
+  lineage through documentation commit `5af528f` is unchanged by the final evidence-only update.
+- The Windows and Ubuntu jobs each passed immutable-action checkout, the hash-only development
+  install, editable package installation without resolution, `pip check`, repository policy, Ruff
+  format/security lint, strict mypy, 121 tests with branch coverage, critical-module thresholds, and
+  the 200-window latency smoke workload.
+- The isolated Ubuntu package job passed proprietary sdist/wheel build, runtime-only hash install,
+  clean wheel install, dependency and license/version metadata checks, all four command surfaces,
+  packaged 200-window smoke, and artifact upload.
 
 ## Not demonstrated
 
