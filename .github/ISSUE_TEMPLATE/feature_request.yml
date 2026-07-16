@@ -1,0 +1,45 @@
+name: Feature request
+description: Propose a bounded product or engineering capability.
+title: "feature: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the user or operational problem without prescribing a solution.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: State measurable acceptance criteria and the intended user.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and exclusions
+      description: Include compatibility, privacy, latency, hardware, and scientific-claim boundaries.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Primary area
+      options:
+        - Acquisition and replay
+        - Signal processing and windows
+        - Features, decoders, and validation
+        - Models and persistence
+        - CLI and visualization
+        - Packaging, CI, and documentation
+    validations:
+      required: true
+  - type: checkboxes
+    id: claim
+    attributes:
+      label: Claim boundary
+      options:
+        - label: This request does not claim clinical, diagnostic, safety, or human-EEG efficacy evidence.
+          required: true

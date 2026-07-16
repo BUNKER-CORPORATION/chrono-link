@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Private security report
+    url: https://github.com/BUNKER-CORPORATION/chrono-link/security/advisories/new
+    about: Report vulnerabilities, privacy leaks, and unsafe artifacts privately.
+  - name: Support policy
+    url: https://github.com/BUNKER-CORPORATION/chrono-link/blob/main/SUPPORT.md
+    about: Read supported environments and data-handling requirements before filing.
