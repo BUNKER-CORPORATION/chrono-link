@@ -119,9 +119,7 @@ class ValidationReport:
                         minimum_fold_balanced_accuracy=float(
                             result["minimum_fold_balanced_accuracy"]
                         ),
-                        aggregate_balanced_accuracy=float(
-                            result["aggregate_balanced_accuracy"]
-                        ),
+                        aggregate_balanced_accuracy=float(result["aggregate_balanced_accuracy"]),
                         correct_trials=int(result["correct_trials"]),
                         trial_count=int(result["trial_count"]),
                         binomial_pvalue=float(result["binomial_pvalue"]),
@@ -138,12 +136,8 @@ class ValidationReport:
                 decoder_kind=value["decoder_kind"],
                 seeds=tuple(int(seed) for seed in value["seeds"]),
                 results=tuple(parsed_results),
-                grand_mean_balanced_accuracy=float(
-                    value["grand_mean_balanced_accuracy"]
-                ),
-                dataset_fingerprints=tuple(
-                    str(item) for item in value["dataset_fingerprints"]
-                ),
+                grand_mean_balanced_accuracy=float(value["grand_mean_balanced_accuracy"]),
+                dataset_fingerprints=tuple(str(item) for item in value["dataset_fingerprints"]),
                 protocol_fingerprint=str(value["protocol_fingerprint"]),
                 passed=bool(value["passed"]),
                 failures=tuple(str(item) for item in value["failures"]),
@@ -222,9 +216,7 @@ def _protocol_fingerprint(seeds: Sequence[int], permutation_count: int) -> str:
             "hop_samples": signal_config.hop_samples,
             "warmup_samples": signal_config.warmup_samples,
             "filter_fingerprint": design_filters(250, signal_config).fingerprint,
-            "feature_fingerprint": FeatureExtractor(signal_config).fingerprint(
-                ("C3", "C4")
-            ),
+            "feature_fingerprint": FeatureExtractor(signal_config).fingerprint(("C3", "C4")),
         },
         "thresholds": {
             "seed_mean": 0.80,
@@ -318,8 +310,8 @@ def grouped_cross_validation(
     ):
         train_indices = np.asarray(train_indices, dtype=np.int64)
         test_indices = np.asarray(test_indices, dtype=np.int64)
-        train_groups = set(int(value) for value in groups[train_indices])
-        test_groups = set(int(value) for value in groups[test_indices])
+        train_groups = {int(value) for value in groups[train_indices]}
+        test_groups = {int(value) for value in groups[test_indices]}
         if train_groups & test_groups:
             raise ValidationError("trial leakage detected between train and test")
         if observed_test_groups & test_groups:
@@ -347,7 +339,7 @@ def grouped_cross_validation(
         )
         all_truth.append(truth)
         all_prediction.append(prediction)
-    if observed_test_groups != set(int(value) for value in np.unique(groups)):
+    if observed_test_groups != {int(value) for value in np.unique(groups)}:
         raise ValidationError("grouped folds did not cover every trial exactly once")
     return (
         tuple(fold_results),
@@ -360,8 +352,9 @@ def _permuted_window_labels(
     dataset: SyntheticWindowDataset,
     seed: int,
 ) -> NDArray[np.int64]:
-    assert dataset.windows.trial_ids is not None
     groups = dataset.windows.trial_ids
+    if groups is None:
+        raise ValidationError("permutation labels require trial identifiers")
     unique_groups = np.unique(groups)
     trial_labels = np.asarray(
         [dataset.labels[np.flatnonzero(groups == group)[0]] for group in unique_groups],
@@ -412,9 +405,7 @@ def validate_decoder(
                 float(balanced_accuracy_score(permuted_truth, permuted_prediction))
             )
         permutation_p95 = (
-            None
-            if not permutation_scores
-            else float(np.quantile(permutation_scores, 0.95))
+            None if not permutation_scores else float(np.quantile(permutation_scores, 0.95))
         )
         seed_passed = (
             float(np.mean(scores)) >= 0.80
@@ -430,9 +421,7 @@ def validate_decoder(
                 folds=folds,
                 mean_balanced_accuracy=float(np.mean(scores)),
                 minimum_fold_balanced_accuracy=float(np.min(scores)),
-                aggregate_balanced_accuracy=float(
-                    balanced_accuracy_score(truth, prediction)
-                ),
+                aggregate_balanced_accuracy=float(balanced_accuracy_score(truth, prediction)),
                 correct_trials=correct,
                 trial_count=len(truth),
                 binomial_pvalue=pvalue,
@@ -440,9 +429,7 @@ def validate_decoder(
                 passed=seed_passed,
             )
         )
-    grand_mean = float(
-        np.mean([result.mean_balanced_accuracy for result in results])
-    )
+    grand_mean = float(np.mean([result.mean_balanced_accuracy for result in results]))
     if grand_mean < 0.85:
         failures.append(f"grand mean {grand_mean:.6f} is below 0.85")
     return ValidationReport(

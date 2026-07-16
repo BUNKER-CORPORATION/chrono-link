@@ -51,9 +51,7 @@ def load_validation_report(path: Path, decoder_kind: str) -> ValidationReport:
     if isinstance(value, dict) and "reports" in value:
         reports = value["reports"]
         if not isinstance(reports, dict) or decoder_kind not in reports:
-            raise ValidationError(
-                f"combined report does not contain decoder {decoder_kind!r}"
-            )
+            raise ValidationError(f"combined report does not contain decoder {decoder_kind!r}")
         value = reports[decoder_kind]
     report = ValidationReport.from_dict(value)
     if report.decoder_kind != decoder_kind:

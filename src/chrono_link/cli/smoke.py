@@ -153,9 +153,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         training = preprocess_synthetic_session(session)
         required_samples = 1250 + (20 + args.windows) * 64
         trial_copies = math.ceil(required_samples / session.raw_trials.shape[2])
-        values = np.concatenate(session.raw_trials[:trial_copies], axis=1)[
-            :, :required_samples
-        ]
+        values = np.concatenate(session.raw_trials[:trial_copies], axis=1)[:, :required_samples]
         record = _record(values)
         results = []
         predictions: list[dict[str, Any]] = []

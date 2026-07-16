@@ -201,9 +201,7 @@ class BrainFlowSource:
             raise ConfigError("BrainFlow returned inconsistent EEG rows and names")
         name_to_row = dict(zip(eeg_names, eeg_rows, strict=True))
 
-        missing_decode = [
-            name for name in self._config.decode_channels if name not in name_to_row
-        ]
+        missing_decode = [name for name in self._config.decode_channels if name not in name_to_row]
         if missing_decode:
             raise ConfigError(
                 f"decode channels {missing_decode} are unavailable; available={list(eeg_names)}"
@@ -263,7 +261,8 @@ class BrainFlowSource:
             return None
         if raw.shape[1] == 0:
             started = self._last_sample_at
-            assert started is not None
+            if started is None:
+                raise SourceError("source timing state is unavailable while streaming")
             elapsed = self._clock() - started
             if elapsed >= self._stall_timeout_s:
                 raise SourceStallError(f"source stalled for {elapsed:.3f} seconds")
@@ -315,8 +314,7 @@ class BrainFlowSource:
             raise InvalidSampleError("source returned non-finite EEG or timestamps")
         timestamp_diffs = np.diff(timestamps)
         if np.any(timestamp_diffs <= 0) or (
-            self._previous_timestamp is not None
-            and timestamps[0] <= self._previous_timestamp
+            self._previous_timestamp is not None and timestamps[0] <= self._previous_timestamp
         ):
             raise InvalidSampleError("source timestamps must be finite and strictly increasing")
 
@@ -336,16 +334,17 @@ class BrainFlowSource:
             dtype=np.int64,
         )
         break_indices: list[int] = []
-        if self._previous_counter is not None and (
-            int(counters[0]) - self._previous_counter
-        ) % 256 != 1:
+        if (
+            self._previous_counter is not None
+            and (int(counters[0]) - self._previous_counter) % 256 != 1
+        ):
             break_indices.append(0)
         for index in np.flatnonzero((np.diff(counters) % 256) != 1) + 1:
             break_indices.append(int(index))
 
         record_name_by_row = dict(zip(info.eeg_rows, info.eeg_names, strict=True))
         channel_names = tuple(record_name_by_row[row] for row in info.record_rows)
-        starts = sorted(set([0, *break_indices]))
+        starts = sorted({0, *break_indices})
         stops = [*starts[1:], samples]
         chunks: list[SampleChunk] = []
         for start, stop in zip(starts, stops, strict=True):
@@ -353,7 +352,8 @@ class BrainFlowSource:
             if start in break_indices:
                 before = int(sequence[start])
                 previous = self._previous_counter if start == 0 else int(counters[start - 1])
-                assert previous is not None
+                if previous is None:
+                    raise SourceError("package-gap state is missing the previous counter")
                 event = (
                     SourceEvent(
                         code="PACKAGE_GAP",
@@ -387,8 +387,10 @@ class BrainFlowSource:
             return
         self._stop_called = True
         try:
-            assert self._board is not None
-            self._board.stop_stream()
+            board = self._board
+            if board is None:
+                raise SourceError("stream is active without an acquired board")
+            board.stop_stream()
         finally:
             self._stream_started = False
             if self._state is not LifecycleState.RELEASED:
@@ -401,8 +403,10 @@ class BrainFlowSource:
             self.stop()
         self._release_called = True
         try:
-            assert self._board is not None
-            self._board.release_session()
+            board = self._board
+            if board is None:
+                raise SourceError("session is acquired without a board instance")
+            board.release_session()
         finally:
             self._session_acquired = False
             self._state = LifecycleState.RELEASED

@@ -189,9 +189,7 @@ class FeatureExtractor:
     def __init__(self, config: SignalConfig | None = None) -> None:
         self.config = config or SignalConfig()
         by_name = {band.name: band for band in self.config.filter_bands}
-        self.vector_bands = tuple(
-            by_name[name] for name in self.config.vector_feature_bands
-        )
+        self.vector_bands = tuple(by_name[name] for name in self.config.vector_feature_bands)
 
     def temporal(self, window: WindowBundle) -> TemporalFeatures:
         missing = [band.name for band in self.vector_bands if band.name not in window.bands]
@@ -225,9 +223,7 @@ class FeatureExtractor:
                         f"{band.name}.{left}.{right}.plv",
                     )
                 )
-        names.extend(
-            f"broadband.{channel}.spectral_entropy" for channel in channel_names
-        )
+        names.extend(f"broadband.{channel}.spectral_entropy" for channel in channel_names)
         return tuple(names)
 
     def names(self, channel_names: tuple[str, ...]) -> tuple[str, ...]:
@@ -284,9 +280,7 @@ class FeatureExtractor:
                 band.high_hz,
             )
             for channel_index in range(len(window.channel_names)):
-                amplitude = temporal.amplitude[
-                    band_index, channel_index, temporal.valid_slice
-                ]
+                amplitude = temporal.amplitude[band_index, channel_index, temporal.valid_slice]
                 values.extend(
                     (
                         float(log_power_db(powers[channel_index])),
@@ -304,9 +298,7 @@ class FeatureExtractor:
 
         if "broadband" not in window.bands:
             raise FeatureError("window is missing broadband for spectral entropy")
-        broadband_frequency, broadband_density = welch_psd(
-            window.bands["broadband"], window.fs
-        )
+        broadband_frequency, broadband_density = welch_psd(window.bands["broadband"], window.fs)
         values.extend(
             float(value)
             for value in normalized_spectral_entropy(

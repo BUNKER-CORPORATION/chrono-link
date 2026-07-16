@@ -93,8 +93,8 @@ def test_gap_replay_patterns_reset_full_warmup_and_never_bridge_boundary() -> No
     local = np.arange(3199, dtype=np.int64)
     rng = np.random.default_rng(20260709)
     values = rng.normal(size=(2, 3199))
-    previous = int((250 + 1299) % 256)
-    current = int((250 + 1301) % 256)
+    previous = (250 + 1299) % 256
+    current = (250 + 1301) % 256
     record = SessionRecord(
         data=values,
         timestamps=1_700_000_000.0 + logical / 250,

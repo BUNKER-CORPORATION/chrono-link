@@ -181,9 +181,7 @@ def test_loader_rejects_field_type_corruption(
 )
 def test_loader_rejects_event_json_schemas(tmp_path: Path, events: object) -> None:
     fields = base_record().as_npz_fields()
-    fields["events_json_utf8"] = np.frombuffer(
-        json.dumps(events).encode(), dtype=np.uint8
-    )
+    fields["events_json_utf8"] = np.frombuffer(json.dumps(events).encode(), dtype=np.uint8)
     path = tmp_path / f"events-{len(list(tmp_path.iterdir()))}.npz"
     write_fields(path, fields)
     with pytest.raises(RecordingError, match="event"):
@@ -257,9 +255,8 @@ def test_recorder_constructor_append_context_and_finalize_paths(
         ChronoConfig.synthetic(),
         max_samples=1,
     )
-    with pytest.raises(RuntimeError):
-        with recorder:
-            raise RuntimeError("abort")
+    with pytest.raises(RuntimeError), recorder:
+        raise RuntimeError("abort")
     with pytest.raises(RecordingError, match="closed"):
         recorder.append(chunk(0, 1))
     with pytest.raises(RecordingError, match="aborted"):
