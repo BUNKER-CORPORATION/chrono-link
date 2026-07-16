@@ -66,9 +66,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             return EXIT_VALIDATION
         validate_training_report(report)
         if args.seed not in report.seeds:
-            raise ModelStoreError(
-                f"training seed {args.seed} is absent from the validation report"
-            )
+            raise ModelStoreError(f"training seed {args.seed} is absent from the validation report")
         session = SyntheticMISessionGenerator(args.seed).generate()
         fingerprint = dataset_fingerprint(session)
         report_index = report.seeds.index(args.seed)

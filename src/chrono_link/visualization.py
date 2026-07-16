@@ -89,8 +89,7 @@ class LiveVisualizer:
             for name in channel_names
         }
         self._psd_lines = {
-            name: self.psd_axis.plot([], [], label=name, linewidth=1.2)[0]
-            for name in channel_names
+            name: self.psd_axis.plot([], [], label=name, linewidth=1.2)[0] for name in channel_names
         }
         self.time_axis.legend(loc="upper right")
         self.psd_axis.legend(loc="upper right")
@@ -112,9 +111,7 @@ class LiveVisualizer:
         selected = np.asarray(chunk.eeg[indices, :], dtype=np.float64)
         if not np.isfinite(selected).all():
             raise VisualizationError("visualization input must be finite")
-        self._data = np.concatenate((self._data, selected), axis=1)[
-            :, -self.history_samples :
-        ]
+        self._data = np.concatenate((self._data, selected), axis=1)[:, -self.history_samples :]
         self._samples_seen += selected.shape[1]
         end_seconds = self._samples_seen / self.fs
         start_seconds = end_seconds - self._data.shape[1] / self.fs

@@ -84,14 +84,11 @@ class WindowAssembler:
         self._cleaned = np.concatenate((self._cleaned, chunk.cleaned[:, start:]), axis=1)
         if not self._bands:
             self._bands = {
-                name: np.array(values[:, start:], copy=True)
-                for name, values in chunk.bands.items()
+                name: np.array(values[:, start:], copy=True) for name, values in chunk.bands.items()
             }
         else:
             for name, values in chunk.bands.items():
-                self._bands[name] = np.concatenate(
-                    (self._bands[name], values[:, start:]), axis=1
-                )
+                self._bands[name] = np.concatenate((self._bands[name], values[:, start:]), axis=1)
         self._timestamps = np.concatenate((self._timestamps, chunk.timestamps[start:]))
         self._sequence = np.concatenate((self._sequence, sequence))
         self._seen += len(sequence)

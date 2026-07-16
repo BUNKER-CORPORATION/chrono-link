@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -62,9 +63,9 @@ def write_record(path: Path, samples: int = 20) -> None:
     sequence = np.arange(samples, dtype=np.int64)
     time = sequence / 250
     record = SessionRecord(
-        data=np.vstack(
-            (np.sin(2 * np.pi * 10 * time), np.sin(2 * np.pi * 12 * time + 0.2))
-        ).astype(np.float64),
+        data=np.vstack((np.sin(2 * np.pi * 10 * time), np.sin(2 * np.pi * 12 * time + 0.2))).astype(
+            np.float64
+        ),
         timestamps=1_700_000_000.0 + time,
         sequence=sequence,
         package_counter=sequence % 256,
@@ -102,11 +103,11 @@ def test_module_dispatches_every_command(monkeypatch) -> None:
 def test_common_parsers_and_strict_json(tmp_path: Path) -> None:
     assert csv_tuple("C3, C4") == ("C3", "C4")
     assert integer_csv("7,42") == (7, 42)
-    with pytest.raises(Exception):
+    with pytest.raises(argparse.ArgumentTypeError, match="unique"):
         csv_tuple("C3,C3")
-    with pytest.raises(Exception):
+    with pytest.raises(argparse.ArgumentTypeError, match="integers"):
         integer_csv("nope")
-    with pytest.raises(Exception):
+    with pytest.raises(argparse.ArgumentTypeError, match="non-empty"):
         integer_csv("")
     valid = tmp_path / "valid.json"
     valid.write_text('{"ok":true}', encoding="utf-8")
@@ -181,8 +182,7 @@ def test_train_cli_success_and_failure_mappings(tmp_path: Path, monkeypatch) -> 
         lambda *args, **kwargs: destination,
     )
     assert (
-        train.main(["--decoder", "riemann", "--out-dir", str(tmp_path / "models")])
-        == EXIT_SUCCESS
+        train.main(["--decoder", "riemann", "--out-dir", str(tmp_path / "models")]) == EXIT_SUCCESS
     )
     assert train.main(["--decoder", "riemann", "--permutations", "-1"]) == EXIT_CONFIG
 

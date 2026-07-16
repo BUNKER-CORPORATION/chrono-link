@@ -1,0 +1,17 @@
+{
+  "board": {
+    "decode_channels": [
+      "C3",
+      "C4"
+    ],
+    "profile": "synthetic",
+    "record_channels": "all"
+  },
+  "output_root": "artifacts",
+  "signal": {
+    "hop_samples": 64,
+    "mains_hz": 50,
+    "warmup_samples": 1000,
+    "window_samples": 250
+  }
+}

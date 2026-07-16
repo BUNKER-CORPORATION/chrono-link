@@ -52,9 +52,7 @@ class PipelineStep:
     had_chunk: bool
     windows: tuple[WindowBundle, ...] = ()
     predictions: tuple[PredictionEvent, ...] = ()
-    timings_s: MappingProxyType[str, float] = field(
-        default_factory=lambda: MappingProxyType({})
-    )
+    timings_s: MappingProxyType[str, float] = field(default_factory=lambda: MappingProxyType({}))
 
 
 @dataclass
@@ -207,8 +205,7 @@ class RealtimePipeline:
             self.raw_callback(chunk)
         if chunk.events_before:
             self.metrics.gaps += sum(
-                event.code in {"PACKAGE_GAP", "REPLAY_GAP"}
-                for event in chunk.events_before
+                event.code in {"PACKAGE_GAP", "REPLAY_GAP"} for event in chunk.events_before
             )
             self.metrics.resets += 1
             filter_bank.reset()
@@ -299,10 +296,7 @@ class RealtimePipeline:
             while True:
                 if duration_s is not None and self.clock() - started >= duration_s:
                     break
-                if (
-                    max_predictions is not None
-                    and self.metrics.predictions >= max_predictions
-                ):
+                if max_predictions is not None and self.metrics.predictions >= max_predictions:
                     break
                 result = self.step()
                 if not result.had_chunk:

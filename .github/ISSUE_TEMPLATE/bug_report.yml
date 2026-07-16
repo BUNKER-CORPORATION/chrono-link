@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a reproducible Chrono Link software defect without sensitive data.
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include recordings, credentials, serial identifiers, or real EEG. Security and privacy
+        issues belong in a private security advisory.
+  - type: input
+    id: commit
+    attributes:
+      label: Commit or version
+      description: Exact Git commit SHA or released version.
+      placeholder: 0123456789abcdef...
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows (supported)
+        - Ubuntu Linux (supported)
+        - Other (not in the reference matrix)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal commands, sanitized inputs, and deterministic steps.
+      placeholder: |
+        1. Install locks/windows-py311-dev.txt with --require-hashes
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and sanitized output
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Data safety
+      options:
+        - label: I removed secrets, recordings, real EEG, personal data, and proprietary third-party data.
+          required: true
+        - label: I reproduced this with Python 3.11.9 and the committed hash lock.
+          required: true

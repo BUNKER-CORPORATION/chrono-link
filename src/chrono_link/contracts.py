@@ -187,8 +187,7 @@ class WindowBatch:
         return cls(
             cleaned=np.stack([window.cleaned for window in windows]),
             bands={
-                name: np.stack([window.bands[name] for window in windows])
-                for name in branch_names
+                name: np.stack([window.bands[name] for window in windows]) for name in branch_names
             },
             channel_names=first.channel_names,
             fs=first.fs,

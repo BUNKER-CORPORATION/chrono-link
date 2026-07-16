@@ -1,52 +1,162 @@
-name: ci
+name: CI
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  MPLBACKEND: Agg
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUTF8: "1"
 
 jobs:
   test:
+    name: Test / Python 3.11 / ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+        include:
+          - label: Windows
+            os: windows-latest
+          - label: Ubuntu
+            os: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          python-version: "3.11.9"
+          persist-credentials: false
+
+      - name: Set up CPython 3.11.9
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: 3.11.9
           cache: pip
-      - run: python -m pip install --require-hashes -r locks/windows-py311-dev.txt
-      - run: python -m pip install --no-deps -e .
-      - run: python -m pip check
-      - run: ruff check src tests tools
-      - run: mypy src
-      - run: pytest --cov=chrono_link --cov-branch --cov-report=json
-        env:
-          MPLBACKEND: Agg
-      - run: python tools/check_coverage.py
-      - run: chrono-smoke --out-dir artifacts/smoke --windows 200
-        env:
-          MPLBACKEND: Agg
-      - uses: actions/upload-artifact@v4
+          cache-dependency-path: locks/windows-py311-dev.txt
+
+      - name: Install hash-locked development environment
+        run: python -m pip install --require-hashes -r locks/windows-py311-dev.txt
+
+      - name: Install Chrono Link without dependency resolution
+        run: python -m pip install --no-deps -e .
+
+      - name: Verify installed dependency graph
+        run: python -m pip check
+
+      - name: Enforce repository policy
+        run: python tools/check_repository.py
+
+      - name: Check Ruff formatting
+        run: ruff format --check src tests tools
+
+      - name: Run Ruff lint and security rules
+        run: ruff check src tests tools
+
+      - name: Run strict mypy
+        run: mypy src
+
+      - name: Prepare evidence directory
+        run: python -c "from pathlib import Path; Path('artifacts/test').mkdir(parents=True)"
+
+      - name: Run tests with branch coverage
+        run: >-
+          python -m pytest
+          --cov=chrono_link
+          --cov-branch
+          --cov-report=json:coverage.json
+          --cov-report=xml:artifacts/test/coverage.xml
+          --junitxml=artifacts/test/junit.xml
+
+      - name: Enforce coverage thresholds
+        run: python tools/check_coverage.py
+
+      - name: Run 200-window latency smoke
+        run: chrono-smoke --out-dir artifacts/smoke --windows 200
+
+      - name: Upload sanitized test and smoke evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: smoke-${{ matrix.os }}
-          path: artifacts/smoke
+          name: evidence-${{ matrix.label }}-py311
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 14
 
   package:
+    name: Package / Python 3.11 / Ubuntu
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          python-version: "3.11.9"
-      - run: python -m pip install --require-hashes -r locks/windows-py311-dev.txt
-      - run: python -m build
-      - run: python -m venv wheel-test
-      - run: wheel-test/bin/python -m pip install --require-hashes -r locks/windows-py311-runtime.txt
-      - run: wheel-test/bin/python -m pip install --no-deps dist/*.whl
-      - run: wheel-test/bin/chrono-stream --help
-      - run: wheel-test/bin/chrono-validate --help
-      - run: wheel-test/bin/chrono-train --help
-      - run: wheel-test/bin/chrono-smoke --help
+          persist-credentials: false
+
+      - name: Set up CPython 3.11.9
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: 3.11.9
+          cache: pip
+          cache-dependency-path: locks/windows-py311-dev.txt
+
+      - name: Install hash-locked build environment
+        run: python -m pip install --require-hashes -r locks/windows-py311-dev.txt
+
+      - name: Enforce repository policy
+        run: python tools/check_repository.py
+
+      - name: Build source and wheel distributions
+        run: python -m build
+
+      - name: Create isolated wheel environment
+        run: python -m venv wheel-test
+
+      - name: Install hash-locked runtime environment
+        run: wheel-test/bin/python -m pip install --require-hashes -r locks/windows-py311-runtime.txt
+
+      - name: Install wheel without dependency resolution
+        run: wheel-test/bin/python -m pip install --no-deps dist/*.whl
+
+      - name: Verify isolated dependency graph
+        run: wheel-test/bin/python -m pip check
+
+      - name: Verify installed package metadata
+        run: >-
+          wheel-test/bin/python -c
+          "import importlib.metadata as m; import chrono_link;
+          assert m.version('chrono-link') == chrono_link.__version__ == '0.1.0';
+          assert m.metadata('chrono-link')['License-Expression'] == 'LicenseRef-Proprietary'"
+
+      - name: Verify installed command surfaces
+        run: |
+          wheel-test/bin/chrono-stream --help
+          wheel-test/bin/chrono-validate --help
+          wheel-test/bin/chrono-train --help
+          wheel-test/bin/chrono-smoke --help
+
+      - name: Run packaged 200-window smoke
+        run: wheel-test/bin/chrono-smoke --out-dir artifacts/package-smoke --windows 200
+
+      - name: Upload proprietary distributions and package evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: chrono-link-0.1.0-package
+          path: |
+            dist/
+            artifacts/package-smoke/
+          if-no-files-found: error
+          retention-days: 14

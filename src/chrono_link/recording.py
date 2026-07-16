@@ -205,9 +205,7 @@ class SessionRecord:
 
     def _validate_gap_events(self, positions: Mapping[int, int]) -> None:
         package_events = {
-            event.before_sequence: event
-            for event in self.events
-            if event.code == "PACKAGE_GAP"
+            event.before_sequence: event for event in self.events if event.code == "PACKAGE_GAP"
         }
         if len(package_events) != sum(event.code == "PACKAGE_GAP" for event in self.events):
             raise RecordingError("duplicate PACKAGE_GAP event boundary")
@@ -219,17 +217,11 @@ class SessionRecord:
         expected = {
             int(self.sequence[index])
             for index in range(1, self.sample_count)
-            if (int(self.package_counter[index]) - int(self.package_counter[index - 1]))
-            % 256
-            != 1
+            if (int(self.package_counter[index]) - int(self.package_counter[index - 1])) % 256 != 1
         }
-        internal_actual = {
-            boundary for boundary in package_events if positions[boundary] > 0
-        }
+        internal_actual = {boundary for boundary in package_events if positions[boundary] > 0}
         if internal_actual != expected:
-            raise RecordingError(
-                "PACKAGE_GAP events disagree with package-counter discontinuities"
-            )
+            raise RecordingError("PACKAGE_GAP events disagree with package-counter discontinuities")
         for boundary, event in package_events.items():
             position = positions[boundary]
             previous = event.details.get("previous_counter")
@@ -257,9 +249,7 @@ class SessionRecord:
             "config_json_utf8": np.frombuffer(
                 self.config_json.encode("utf-8"), dtype=np.uint8
             ).copy(),
-            "events_json_utf8": _encode_json(
-                [_event_to_dict(event) for event in self.events]
-            ),
+            "events_json_utf8": _encode_json([_event_to_dict(event) for event in self.events]),
         }
 
     @classmethod
@@ -339,9 +329,7 @@ class SessionRecorder:
         self._config_json = config.canonical_json()
         self._max_samples = max_samples
         self._units = units or ("brainflow_native",) * len(channel_names)
-        self._created_utc = created_utc or datetime.now(UTC).isoformat().replace(
-            "+00:00", "Z"
-        )
+        self._created_utc = created_utc or datetime.now(UTC).isoformat().replace("+00:00", "Z")
         self._events: list[SourceEvent] = []
         self._count = 0
         self._closed = False
@@ -424,9 +412,7 @@ class SessionRecorder:
                 data=np.array(self._store["data"][: self._count].T, copy=True),
                 timestamps=np.array(self._store["timestamp"][: self._count], copy=True),
                 sequence=np.array(self._store["sequence"][: self._count], copy=True),
-                package_counter=np.array(
-                    self._store["package_counter"][: self._count], copy=True
-                ),
+                package_counter=np.array(self._store["package_counter"][: self._count], copy=True),
                 channel_names=self._channel_names,
                 units=self._units,
                 fs=self._info.fs,
@@ -486,11 +472,7 @@ class ReplaySource:
         decode_channels: tuple[str, ...] | None = None,
     ) -> None:
         self._record_or_path = record
-        sizes: tuple[int, ...]
-        if isinstance(chunk_sizes, int):
-            sizes = (chunk_sizes,)
-        else:
-            sizes = tuple(chunk_sizes)
+        sizes = (chunk_sizes,) if isinstance(chunk_sizes, int) else tuple(chunk_sizes)
         if not sizes or any(size <= 0 for size in sizes):
             raise ValueError("chunk sizes must be positive")
         self._sizes = sizes
@@ -512,7 +494,8 @@ class ReplaySource:
 
     def prepare(self) -> ResolvedBoardInfo:
         if self._state is LifecycleState.PREPARED:
-            assert self._info is not None
+            if self._info is None:
+                raise SourceError("prepared replay is missing resolved board information")
             return self._info
         if self._state is not LifecycleState.NEW:
             raise SourceError(f"cannot prepare replay in state {self._state.name}")
@@ -577,9 +560,7 @@ class ReplaySource:
             if boundary > start_sequence
         ]
         internal = [
-            boundary
-            for boundary in event_boundaries
-            if self._position < boundary < requested_stop
+            boundary for boundary in event_boundaries if self._position < boundary < requested_stop
         ]
         stop = min(internal, default=requested_stop)
         target = slice(self._position, stop)
@@ -589,9 +570,7 @@ class ReplaySource:
             eeg=np.array(record.data[:, target], copy=True),
             timestamps=np.array(record.timestamps[target], copy=True),
             sequence=np.array(record.sequence[target], copy=True),
-            package_counter=(
-                None if np.all(package == -1) else np.array(package, copy=True)
-            ),
+            package_counter=(None if np.all(package == -1) else np.array(package, copy=True)),
             channel_names=record.channel_names,
             fs=record.fs,
             markers=np.array(record.markers[target], copy=True),

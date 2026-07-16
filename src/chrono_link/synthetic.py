@@ -120,9 +120,7 @@ class SyntheticMISessionGenerator:
                     * np.sqrt(2.0)
                     * np.sin(2 * np.pi * mu_frequency * time + mu_phase)
                 )
-                beta = 0.25 * np.sqrt(2.0) * np.sin(
-                    2 * np.pi * 20.0 * time + beta_phase
-                )
+                beta = 0.25 * np.sqrt(2.0) * np.sin(2 * np.pi * 20.0 * time + beta_phase)
                 white = _normalize_rms(
                     np.asarray(self._rng.normal(size=self.samples), dtype=np.float64)
                 )
@@ -131,9 +129,9 @@ class SyntheticMISessionGenerator:
                 trials[trial_index, channel_index] = mu + beta + noise
                 if mu_rms[channel_index] == 1.0:
                     measured_snr.append(
-                        20 * np.log10(
-                            float(np.sqrt(np.mean(mu**2)))
-                            / float(np.sqrt(np.mean(noise**2)))
+                        20
+                        * np.log10(
+                            float(np.sqrt(np.mean(mu**2))) / float(np.sqrt(np.mean(noise**2)))
                         )
                     )
 
