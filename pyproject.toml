@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==80.9.0", "wheel==0.47.0"]
+requires = ["setuptools==84.0.0", "wheel==0.47.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -34,7 +34,7 @@ dependencies = [
   "brainflow==5.22.2",
   # BrainFlow imports pkg_resources at runtime. Newer setuptools releases
   # removed that API, so this is an intentional compatibility boundary.
-  "setuptools==80.9.0",
+  "setuptools==84.0.0",
   "numpy>=2.4,<2.5",
   "scipy>=1.17,<1.18",
   "scikit-learn>=1.9,<1.10",
